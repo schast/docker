@@ -8,7 +8,7 @@ if [ ! -z "$1" ]; then
 fi
 
 echo "starting Build"
-docker build -t $NAME:"php7_$VERSION" $BARG .
+docker build -t $NAME:"dev_$VERSION" $BARG .
 echo "build finished"
 echo "you can now starting the docker image with following Command"
 echo "docker run -d -it --restart always --name $NAME -p 8080:80 -v <local docker volume>:/var/www/admidio/adm_my_files -v <local docker volume>:/var/www/admidio/adm_themes -v <local docker volume>:/var/www/admidio/adm_plugins $NAME:php7_$VERSION"

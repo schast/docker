@@ -32,14 +32,13 @@ apt-get autoremove -y && \
 apt-get autoclean -y && \
 apt-get clean
 
-#create prov folder
-RUN mkdir -p $PROV && \
-cp -a $ADM/adm_my_files $ADM/adm_plugins $ADM/adm_themes $PROV/
+#create and copy files to prov folder
+RUN cp -r $ADM/ $PROV
 
 RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 30M/g" /etc/php/7.0/apache2/php.ini
 RUN sed -i "s/post_max_size = 8M/post_max_size = 40M/g" /etc/php/7.0/apache2/php.ini
 
-VOLUME ["$WWW/$ADM/adm_my_files", "$WWW/$ADM/adm_themes", "$WWW/$ADM/adm_plugins" ,"$APACHECONF"]
+VOLUME ["$WWW/$ADM","$APACHECONF"]
 
 # Port to expose
 EXPOSE 80

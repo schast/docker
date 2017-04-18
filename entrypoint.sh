@@ -35,15 +35,25 @@ done
 
 # check if Admidio directory is empty.
 # when empty then copy files from prov folder
-for folder in adm_plugins adm_themes adm_my_files;
-do
-	if [ -n "$(find $WWW/$ADM/$folder/ -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
-    echo "directory is Empty"
-    echo "copy from prov $folder"
-    cp -a $WWW/$PROV/$folder/* $WWW/$ADM/$folder/
-    chown -R www-data:www-data $WWW/$ADM/$folder
-	fi
-done
+
+if [ -n "$(find $WWW/$ADM/ -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
+	echo "Admidio Directory is Empty"
+	echo "copy Admidio from Prov folder"
+	cp -a $WWW/$PROV/. $WWW/$ADM/
+	chown -R www-data:www-data $WWW/$ADM
+	echo "done"
+else
+	for folder in adm_plugins adm_themes adm_my_files;
+	do
+		if [ -n "$(find $WWW/$ADM/$folder/ -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
+		echo "directory is Empty"
+		echo "copy from prov $folder"
+		cp -r $WWW/$PROV/$folder/. $WWW/$ADM/$folder/
+		chown -R www-data:www-data $WWW/$ADM/$folder
+		fi
+	done
+	echo "done"
+fi
 
 # patch
 # AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using <docker_ip> Set the 'ServerName' directive globally to suppress this message

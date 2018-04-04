@@ -37,6 +37,12 @@ und nach diesen gesucht werden. [(c) Admidio.org 2017](https://www.admidio.org/d
 ---
 [*MySQL Benutzer und Datenbank in der Mysql-Shell erstellen*](#mysql-benutzer-und-datenbank-in-der-mysql-shell-erstellen)
 
+---
+[*Docker Compose*](#docker-compose)
+
+[*Admidio mit Docker Compose und SSL Reverse Proxy*](#admidio-mit-docker-compose-und-ssl-reverse-proxy)
+
+
 ## Warum Docker
 
 Da ich selber mehrere Server mit Docker verbunden habe, wollte ich jetzt für unseren Verein nicht wieder einen extra Webserver 
@@ -189,4 +195,155 @@ GRANT ALL ON admidio.* TO 'admidio'@'%';
 FLUSH PRIVILEGES;
 quit;
 ```
+
+# Docker Compose
+
+Mit [*Docker-Compose*](https://docs.docker.com/compose/overview/) kann man sich die Container automatisch erstellen lassen und Verwalten.
+
+Hier eine kleine Beispieldatei wie automatisch eine MySQL Datenbank erstellt wird und verlinkt auf den Admidio Container.
+
+docker-compose.yaml
+```yaml
+version: '3'
+
+services:
+  mysql:
+    restart: always
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret-password
+      # mit diesen 3 zusätzlichen Zeilen wird eine Datenbank und Benutzer erstellt.
+      - MYSQL_DATABASE=admidio
+      - MYSQL_USER=admidio
+      - MYSQL_PASSWORD=secret-password
+    volumes:
+      - <Lokaler-pfad-zum-Verzeichnis>/mysqlconfd:/etc/mysql/conf.d
+      - <Lokaler-pfad-zum-Verzeichnis>/mysqldata:/var/lib/mysql
+    ports:
+      - 3306:3306
+
+
+  admidio:
+    restart: always
+    image: admidio/admidio:v3.2
+    depends_on:
+      - mysql
+    volumes:
+      - <Lokaler-pfad-zum-Verzeichnis>/admidio_files:/var/www/admidio/adm_my_files
+      - <Lokaler-pfad-zum-Verzeichnis>/admidio_plugins:/var/www/admidio/adm_plugins
+      - <Lokaler-pfad-zum-Verzeichnis>/admidio_themes:/var/www/admidio/adm_themes
+    ports:
+      - 80:80
+
+```
+
+Mit dem folgendem Befehl werden die Container erstellt und als Dienst gestartet.
+```bash
+docker-compose up -d
+```
+
+Mit *docker-compose down* werden die Container beendet und gelöscht, die Volumes bleiben dabei erhalten.
+
+Ein update kann auch mit *docker-compose up -d* gemacht werden, dabei wird geprüft ob sich etwas im docker-compose.yaml geändert hat, und 
+gegebenfalls wird der jeweilige Container neu erstellt.
+
+## Admidio mit Docker-Compose und SSL Reverse Proxy
+
+Bei diesem Beispiel wird der [Nginx Proxy von jwilder](https://github.com/jwilder/nginx-proxy) mit [JrCs docker-letsencrypt-nginx-proxy-companion
+](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) verwendet.
+
+* Zuerst wird der Nginx Proxy und der Let's Encrypt dienst über docker-compose eingerichtet.
+[Gist](https://gist.github.com/Brawn1/ace8599947b05520287f7ccf17944251)
+
+```yaml
+version: '2.0'
+
+services:
+  nginx-proxy:
+    restart: always
+    image: jwilder/nginx-proxy:latest
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - nginxcerts:/etc/nginx/certs:ro
+      - nginxvhostd:/etc/nginx/vhost.d
+      - /usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginxconfd:/etc/nginx/conf.d
+    networks:
+      - nginx-proxy
+
+  letsencrypt-nginx-proxy-companion:
+    restart: always
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    # environment:  # remove this fake certificate in production
+    # - ACME_CA_URI=https://acme-staging.api.letsencrypt.org/directory
+    volumes:
+      - nginxcerts:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    volumes_from:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true
+
+volumes:
+  nginxcerts:
+  nginxvhostd:
+  nginxconfd:
+```
+
+
+* Danach kann Admidio mit einer Datenbank und einem extra Netzwerk eingerichtet werden.
+
+```yaml
+version: '3'
+
+services:
+  mysql:
+    restart: always
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret-password
+      # mit diesen 3 zusätzlichen Zeilen wird eine Datenbank und Benutzer erstellt.
+      - MYSQL_DATABASE=admidio
+      - MYSQL_USER=admidio
+      - MYSQL_PASSWORD=secret-password
+    volumes:
+      - <Lokaler-pfad-zum-Verzeichnis>/mysqlconfd:/etc/mysql/conf.d
+      - <Lokaler-pfad-zum-Verzeichnis>/mysqldata:/var/lib/mysql
+    networks:
+      - backend
+
+  admidio:
+    restart: always
+    image: admidio/admidio:v3.2
+    environment:
+    # mit diesen 4 Variablen wird dem NGINX-Proxy die Notwendigen Infos übermittelt.
+      - VIRTUAL_HOST=<Domain z.b.: admidio.example.com> # wird für Port 80 verwendet
+      - LETSENCRYPT_HOST=<Domain z.b.: admidio.example.com> # wird für Port 443 verwendet und um das erstellen vom Zertifikat
+      - LETSENCRYPT_EMAIL=office@example.com # wird für das erstellen vom Zertifikat verwendet
+      - VIRTUAL_PROTO=http # Kommunikation zwischen Nginx-proxy und Admidio
+    depends_on:
+      - mysql
+    networks:
+    # zuweisung zu den Netzwerken.
+      - backend
+      - nginx-proxy
+    volumes:
+      - <Lokaler-pfad-zum-Verzeichnis>/admidio_files:/var/www/admidio/adm_my_files
+      - <Lokaler-pfad-zum-Verzeichnis>/admidio_plugins:/var/www/admidio/adm_plugins
+      - <Lokaler-pfad-zum-Verzeichnis>/admidio_themes:/var/www/admidio/adm_themes
+
+networks:
+  backend:
+  nginx-proxy:
+    external: true
+
+```
+
+Mit *docker-compose up -d* werden die Container erstellt und nach ein paar Sekunden ist Admidio über admidio.example.com per HTTPS erreichbar.
+Der HTTP verkehr wird automatisch auf HTTPS umgeleitet.
 

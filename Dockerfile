@@ -22,12 +22,11 @@ RUN a2dissite 000-default.conf && a2ensite admidio.conf
 
 #Admidio from Github
 RUN echo "Clone Admidio from GiT with Branch $ADM_BRANCH" && \
-git clone --depth 1 --single-branch --branch $ADM_BRANCH https://github.com/Admidio/admidio.git $ADM && \
-chown -R www-data:www-data $ADM && \
-chmod -R 777 $ADM/adm_my_files
+    git clone --depth 1 --single-branch --branch $ADM_BRANCH https://github.com/Admidio/admidio.git $ADM && \
+    chown -R www-data:www-data $ADM && chmod -R 777 $ADM/adm_my_files
 
 RUN mkdir -p $PROV && \
-cp -a $ADM/adm_my_files $ADM/adm_plugins $ADM/adm_themes $PROV/
+    cp -a $ADM/adm_my_files $ADM/adm_plugins $ADM/adm_themes $PROV/
 
 RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 30M/g" /etc/php/7.0/apache2/php.ini
 RUN sed -i "s/post_max_size = 8M/post_max_size = 40M/g" /etc/php/7.0/apache2/php.ini

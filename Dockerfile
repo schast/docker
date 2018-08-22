@@ -1,7 +1,6 @@
 FROM debian:jessie
 MAINTAINER Guenter Bailey
 
-# update and install required packages
 RUN apt-get update && apt-get dist-upgrade -y && \
     apt-get install -y apache2 libapache2-mod-php5 php5 php5-common \
     php5-mcrypt php5-mysql php5-cli php5-gd zip unzip gzip php5-pgsql \
@@ -13,10 +12,7 @@ ENV APACHECONF="/etc/apache2/sites-available"
 ENV WWW="/var/www"
 ENV ADM="admidio"
 ENV PROV="provision"
-# since docker v1.9, we can use --build-arg variable
-# https://docs.docker.com/engine/reference/builder/#arg
-ARG branch
-ENV ADM_BRANCH=${branch:-master}
+ENV ADM_BRANCH="master"
 
 COPY admidio_apache.conf $APACHECONF/"admidio.conf"
 COPY entrypoint.sh /"entrypoint.sh"
@@ -24,12 +20,10 @@ COPY entrypoint.sh /"entrypoint.sh"
 WORKDIR $WWW
 RUN a2dissite 000-default.conf && a2ensite admidio.conf
 
-#Admidio Git
 RUN echo "Clone Admidio from GiT with Branch $ADM_BRANCH" && \
     git clone --depth 1 --single-branch --branch $ADM_BRANCH https://github.com/Admidio/admidio.git $ADM && \
     chown -R www-data:www-data $ADM && chmod -R 777 $ADM/adm_my_files
 
-#create provision folder
 RUN mkdir -p $PROV && \
     cp -a $ADM/adm_my_files $ADM/adm_plugins $ADM/adm_themes $PROV/
 
@@ -37,8 +31,5 @@ RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 30M/g" /etc/php5/ap
 RUN sed -i "s/post_max_size = 8M/post_max_size = 40M/g" /etc/php5/apache2/php.ini
 
 VOLUME ["$WWW/$ADM/adm_my_files", "$WWW/$ADM/adm_themes", "$WWW/$ADM/adm_plugins" ,"$APACHECONF"]
-
-# Port to expose
 EXPOSE 80
-
 ENTRYPOINT ["/entrypoint.sh"]

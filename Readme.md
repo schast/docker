@@ -80,7 +80,7 @@ docker run -d -it --restart always --name admidio_test -p 8080:80 -v /var/adm_my
 
 Danach über den Browser die Seite *http://localhost:8080/* aufrufen und das Admidio Setup durchgehen.
 
-Falls man einen Docker basierte Datenbank hat, kann man die Datenbank mit dem Container verlinken und braucht nicht die IP-Addresse eingeben.
+Falls man einen Docker basierte Datenbank hat, kann man die Datenbank mit dem Containernamen verlinken und braucht nicht die IP-Addresse eingeben.
 
 ```bash
 docker run -d -it --restart always --name admidio_test -p 8080:80 --link dockermysql:mysql -v /var/adm_my_files:/var/www/admidio/adm_my_files -v /var/admidio_themes:/var/www/admidio/adm_themes -v /var/admidio_plugins:/var/www/admidio/adm_plugins admidio/admidio:v3.2.8

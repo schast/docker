@@ -62,34 +62,13 @@ Den Fertigen Container kann man einfach per [docker pull admidio/admidio:latest]
 
 ## Container erstellen
 
-Um den Container selber Lokal zu erstellen, muss man das Git Repositority [docker](https://github.com/Admidio/docker.git) downloaden oder Clonen.
+Um den Container selber Lokal zu erstellen, muss man das Git Repositority Klonen und zu dem jeweiligen Branch wechseln oder man ladet den jeweiligen Branch runter.
 
-Danach in den Ordner wechseln und mit dem *docker_build.sh* Skript den Container erstellen.
-```bash
-sh docker_build.sh
-```
-Dabei wird der Container jetzt mit dem Branch *master* erstellt.
-
-Falls man einen Speziellen Branch braucht, muss man noch den Befehl um die Branch bezeichnung erweitern.
-```bash
-sh docker_build.sh v3.2.8
-```
-
-### Container mit Docker Befehl erstellen
-
-Der Container wird mit diesem Befehl automatisch mit dem Branch *master* erstellt.
+Danach in den Ordner wechseln und mit dem Befehl *Docker build* den Container erstellen.
 
 ```bash
 docker build -t admidio_test .
 ```
-
-Für einen Speziellen Branch, gibt man noch *--build-arg branch=Branch-Bezeichnung* an.
-
-```bash
-docker build -t admidio_test --build-arg branch=v3.2.8 .
-```
-
-Im Kompillierungsprozess wird die Datei *admidio_apache.conf* automatisch in den Container kopiert und eingerichtet.
 
 ### Container starten
 
@@ -162,20 +141,17 @@ docker run -d -it --restart always --name admidio_test -p 8080:80 --link dockerm
 
 ### Container über Git updaten
 
-Mit *Git pull* im aktuellen Ordner, das Git Repo updaten und den Container neu Bauen.
+Mit *Git pull* im aktuellen Ordner, das Git Repo runterladen und den Container neu Bauen.
+
 ```bash
 git pull
 ```
 
 ```bash
-sh docker_build.sh
-```
-
-oder mit Docker Befehl:
-```bash
 docker build -t admidio_test .
 ```
-Das Container update selber ist wieder das gleiche, wie oben Beschrieben ohne dem Docker Hub Teil.
+
+Danach wendet man die gleichen Schritte an wie bei [*Container updaten*](#container-updaten), nur ohne den Download vom Docker Hub.
 
 # Wiki zu Admidio
 

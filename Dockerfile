@@ -6,7 +6,7 @@ RUN apt-get update &&apt-get dist-upgrade -y && \
     wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add - && \
     echo "deb https://packages.sury.org/php/ stretch main" | tee /etc/apt/sources.list.d/php.list
 
-RUN apt-get update && apt-get install -y apache2 libapache2-mod-php7.1 
+RUN apt-get update && apt-get install -y apache2 libapache2-mod-php7.1 \
     php7.1 php7.1-common php7.1-mcrypt php7.1-mysql php7.1-cli \
     php7.1-gd php7.1-pgsql php7.1-xml php7.1-zip zip unzip gzip git && \
     rm -rf /var/lib/apt/lists/*

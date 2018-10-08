@@ -10,6 +10,11 @@ Homepage eingebaut und angepasst werden können.*
 Personenprofile und eine Terminübersicht. Außerdem können Mitglieder in Gruppen zusammengelegt, Eigenschaften zugeordnet 
 und nach diesen gesucht werden. [(c) Admidio.org 2017](https://www.admidio.org/dokuwiki/doku.php?id=de:2.0:index)*
 
+## Information
+
+Dieser Branch ist derzeit nur zu Testzwecken.
+Da noch ein paar PHP7.2 Module ausstehen.
+
 
 ## Inhalt
 

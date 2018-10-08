@@ -14,7 +14,7 @@ ENV APACHECONF="/etc/apache2/sites-available"
 ENV WWW="/var/www"
 ENV ADM="admidio"
 ENV PROV="provision"
-ENV ADM_BRANCH="master"
+ENV ADM_BRANCH="v3.3.7"
 
 COPY admidio_apache.conf $APACHECONF/"admidio.conf"
 COPY entrypoint.sh /"entrypoint.sh"

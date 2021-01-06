@@ -14,7 +14,7 @@ ENV ADM_BRANCH="master"
 RUN apt-get update && apt-get dist-upgrade -y && \
     apt-get install -y apache2 libapache2-mod-php7.4 php7.4 php7.4-common \
     php7.4-mysql php7.4-xml php7.4-cli php7.4-gd zip unzip gzip php7.4-pgsql \
-    git && rm -rf /var/lib/apt/lists/*
+    git sendmail && rm -rf /var/lib/apt/lists/*
 # php7.4-mcrypt is deprecated
 
 
@@ -33,6 +33,7 @@ RUN mkdir -p $PROV && \
 
 RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 16G/g" /etc/php/7.4/apache2/php.ini
 RUN sed -i "s/post_max_size = 8M/post_max_size = 16G/g" /etc/php/7.4/apache2/php.ini
+RUN sed -i "s#^ErrorLog.*#ErrorLog /proc/self/fd/2#g" /etc/apache2/apache2.conf
 
 VOLUME ["$WWW/$ADM/adm_my_files", "$WWW/$ADM/adm_themes", "$WWW/$ADM/adm_plugins" ,"$APACHECONF"]
 EXPOSE 80
